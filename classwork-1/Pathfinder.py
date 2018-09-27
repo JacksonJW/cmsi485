@@ -29,6 +29,7 @@ class Pathfinder:
 
     def solve(problem):
         queue = Queue()
+        closedList = []
         queue.put(SearchTreeNode(problem.initial, None, None)) # pylint: disable=no-member
         while queue:
             parent = queue.get()
@@ -36,7 +37,9 @@ class Pathfinder:
                 return Pathfinder.createPath(parent)
             possibleMoves = problem.transitions(parent.state)# pylint: disable=no-member
             for move in possibleMoves:
-                queue.put(SearchTreeNode(move[1], move[0], parent))
+                if move[1] not in closedList:
+                    queue.put(SearchTreeNode(move[1], move[0], parent))
+                    closedList.append(move[1])
 
         return []
 
