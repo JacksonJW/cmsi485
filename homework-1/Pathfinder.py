@@ -17,6 +17,7 @@ def solve(problem, initial, goals):
     initial = SearchTreeNode(initial, None, None, 0, heuristicCost)
     closedList = []
     # find any path to the goal state avoiding walls implement a closed list
+    
 
 
     print(initial.state)
