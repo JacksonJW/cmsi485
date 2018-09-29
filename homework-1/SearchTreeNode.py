@@ -23,7 +23,7 @@ In the notes, we refer to this value as being evaluated through g(n)
 The heuristic estimate of cost to be incurred from this node to the
 optimal solution
 '''
-
+# ('U', 1, (2,3))
 class SearchTreeNode:
     def __init__(self, state, action, parent, totalCost, heuristicCost):
         self.state = state
@@ -31,3 +31,7 @@ class SearchTreeNode:
         self.parent = parent
         self.totalCost = totalCost
         self.heuristicCost = heuristicCost
+
+
+    def __lt__(self, other):
+        return self.totalCost + self.heuristicCost < other.totalCost + other.heuristicCost

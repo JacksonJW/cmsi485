@@ -53,6 +53,7 @@ class MazeProblem:
 
     # transitions returns a list of tuples in the format:
     # [(action1, cost_of_action1, result(action1, s)), ...]
+    # i.e. [("R", 1, (2, 1)), ("D", 1, (1, 2))]
     # corresponding to allowable actions of the given state, as well
     # as the next state the action leads to
     def transitions(self, state):
