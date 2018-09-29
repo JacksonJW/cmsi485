@@ -77,14 +77,14 @@ class MazeProblem:
     # If NOT a solution, returns a cost of -1
     def soln_test(self, soln, initial, goals):
         trans = {"U": (0, -1), "D": (0, 1), "L": (-1, 0), "R": (1, 0)}
-        targets = len(goals)
+        targets = goals.copy()
         s = initial
         tc = 0
         for m in soln:
             s = (s[0] + trans[m][0], s[1] + trans[m][1])
             tc += self.cost(s)
             if s in goals:
-                targets -= 1
+                targets.remove(s)
             if self.maze[s[1]][s[0]] == "X":
                 return (-1, False)
-        return (tc, targets == 0)
+        return (tc, targets == [])

@@ -7,6 +7,7 @@ This task is done in the solve method, as parameterized
 by a maze pathfinding problem, and is aided by the SearchTreeNode DS.
 '''
 import unittest
+import itertools
 from queue import PriorityQueue
 from MazeProblem import MazeProblem
 from SearchTreeNode import SearchTreeNode
@@ -20,21 +21,17 @@ def manhattanDist(state, goal):
 def createPath(node):
     result = []
     while node.parent:
-        result.insert(0, node.action)
+        result.append(node.action)
         node = node.parent
+    result.reverse()
     return result
 
-
-def solve(problem, initial, goals):
+def getDirectionsToGoal(problem, initial, goal):
     # "goals" is in the form i.e. [(2, 2), (2, 1), ... ]
-    heuristicCostFromInitial = manhattanDist(initial, goals[0]) # ONE GOAL
+    heuristicCostFromInitial = manhattanDist(initial, goal) # ONE GOAL
     initial = SearchTreeNode(initial, None, None, 0, heuristicCostFromInitial)
     closedList = []
     costToNode = 0
-
-    for goal in goals:
-        if not problem.transitions(goal):
-            return None
 
     # find the shortest path to the goal state avoiding walls implement a closed list
     frontier = PriorityQueue()
@@ -55,24 +52,50 @@ def solve(problem, initial, goals):
 
         for possibleTransition in possibleTransitions:
             transitionStateIndex = 2
-            if possibleTransition[transitionStateIndex] not in closedList:
-                #this incluxdes something after this above
-                costToNode = problem.cost(
-                    possibleTransition[transitionStateIndex]) + parent.totalCost
-                heuristicCost = manhattanDist(possibleTransition[transitionStateIndex], goals[0])
+            costToNode = parent.totalCost + \
+            problem.cost(possibleTransition[transitionStateIndex])
+
+            if possibleTransition[transitionStateIndex] not in closedList \
+            or costToNode < parent.totalCost:
+
+                heuristicCost = manhattanDist(
+                    possibleTransition[transitionStateIndex], goal)
                 newNode = SearchTreeNode(possibleTransition[transitionStateIndex],
-                                         possibleTransition[0], parent, costToNode, heuristicCost)
+                                         possibleTransition[0], parent, costToNode,
+                                         heuristicCost)
                 frontier.put(newNode)
-        # else:
-        #     return "no possible transitions at: " + str(parent.state)
 
     return "no solution"
 
 
-class PathfinderTests(unittest.TestCase):
+def solve(problem, initial, goals):
+    for goal in goals:
+        if not problem.transitions(goal):
+            return None
 
+    possiblePaths = list(itertools.permutations(goals))
+
+    listOfPaths = []
+
+    for permutation in possiblePaths:
+        initialCopy = initial
+        listOfDirections = []
+        for goal in permutation:
+
+            listOfDirections.extend(
+                getDirectionsToGoal(problem, initialCopy, goal))
+
+            initialCopy = goal
+
+        listOfPaths.append(listOfDirections)
+
+    return min(listOfPaths)
+
+
+class PathfinderTests(unittest.TestCase):
     # These first 4 tests include one goal state to ensure one goal state works
     # with the lowest cost.
+
     def test_maze1(self):
         maze = ["XXXXXXX",
                 "X.....X",
@@ -87,49 +110,50 @@ class PathfinderTests(unittest.TestCase):
         self.assertTrue(is_soln)
         self.assertEqual(soln_cost, 8)
 
-    # def test_maze2(self):
-    #     maze = ["XXXXXXX",
-    #             "X.....X",
-    #             "X.M.M.X",
-    #             "X.X.X.X",
-    #             "XXXXXXX"]
-    #     problem = MazeProblem(maze)
-    #     initial = (1, 3)
-    #     goals = [(3, 3), (5, 3)]
-    #     soln = solve(problem, initial, goals)
-    #     (soln_cost, is_soln) = problem.soln_test(soln, initial, goals)
-    #     self.assertTrue(is_soln)
-    #     self.assertEqual(soln_cost, 12)
-    #
-    # def test_maze3(self):
-    #     maze = ["XXXXXXX",
-    #             "X.....X",
-    #             "X.M.MMX",
-    #             "X...M.X",
-    #             "XXXXXXX"]
-    #     problem = MazeProblem(maze)
-    #     initial = (5, 1)
-    #     goals = [(5, 3), (1, 3), (1, 1)]
-    #     soln = solve(problem, initial, goals)
-    #     (soln_cost, is_soln) = problem.soln_test(soln, initial, goals)
-    #     self.assertTrue(is_soln)
-    #     self.assertEqual(soln_cost, 12)
-    #
-    # def test_maze4(self):
-    #     maze = ["XXXXXXX",
-    #             "X.....X",
-    #             "X.M.XXX",
-    #             "X...X.X",
-    #             "XXXXXXX"]
-    #     problem = MazeProblem(maze)
-    #     initial = (5, 1)
-    #     goals = [(5, 3), (1, 3), (1, 1)]
-    #     soln = solve(problem, initial, goals)
-    #     self.assertTrue(soln is None)
+    def test_maze2(self):
+        maze = ["XXXXXXX",
+                "X.....X",
+                "X.M.M.X",
+                "X.X.X.X",
+                "XXXXXXX"]
+        problem = MazeProblem(maze)
+        initial = (1, 3)
+        goals = [(3, 3), (5, 3)]
+        soln = solve(problem, initial, goals)
+        (soln_cost, is_soln) = problem.soln_test(soln, initial, goals)
+        self.assertTrue(is_soln)
+        self.assertEqual(soln_cost, 12)
+
+    def test_maze3(self):
+        maze = ["XXXXXXX",
+                "X.....X",
+                "X.M.MMX",
+                "X...M.X",
+                "XXXXXXX"]
+        problem = MazeProblem(maze)
+        initial = (5, 1)
+        goals = [(5, 3), (1, 3), (1, 1)]
+        soln = solve(problem, initial, goals)
+        (soln_cost, is_soln) = problem.soln_test(soln, initial, goals)
+        self.assertTrue(is_soln)
+        self.assertEqual(soln_cost, 12)
+
+    def test_maze4(self):
+        maze = ["XXXXXXX",
+                "X.....X",
+                "X.M.XXX",
+                "X...X.X",
+                "XXXXXXX"]
+        problem = MazeProblem(maze)
+        initial = (5, 1)
+        goals = [(5, 3), (1, 3), (1, 1)]
+        soln = solve(problem, initial, goals)
+        self.assertTrue(soln is None)
 
 
     # These 4 tests include one goal state to ensure one goal state works
     # with the lowest cost.
+
     def test_maze5(self):
         maze = ["XXXXX",
                 "X...X",
@@ -183,6 +207,20 @@ class PathfinderTests(unittest.TestCase):
         goals = [(5, 3)]
         soln = solve(problem, initial, goals)
         self.assertTrue(soln is None)
+
+    def test_maze9(self):
+        maze = ["XXXXX",
+                "X...X",
+                "XXX.X",
+                "X...X",
+                "XXXXX"]
+        problem = MazeProblem(maze)
+        initial = (1, 1)
+        goals = [(3, 1), (1, 3)]
+        soln = solve(problem, initial, goals)
+        (soln_cost, is_soln) = problem.soln_test(soln, initial, goals)
+        self.assertTrue(is_soln)
+        self.assertEqual(soln_cost, 6)
 
 
 if __name__ == '__main__':
