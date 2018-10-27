@@ -92,7 +92,6 @@ class MazeClause:
         # TODO: This is currently implemented incorrectly; see
         results = set()
 
-
         for c1_prop in c1.props:
             for c2_prop in c2.props:
                 if c1_prop == c2_prop and c1.props.get(c1_prop) != c2.props.get(c2_prop):
@@ -108,16 +107,6 @@ class MazeClause:
                     return results
 
         return results
-
-        # c1a = [(c1_prop, c1.props.get(c1_prop)) for c1_prop in c1.props if (c1_prop, c1.props.get(c1_prop)) not in blacklist]
-        # c2a = [(c2_prop, c2.props.get(c2_prop)) for c2_prop in c2.props if (c2_prop, c2.props.get(c2_prop)) not in blacklist]
-        # c3 = MazeClause(c1a + c2a)
-
-
-        # union = [prop_in_union for prop_in_union in union
-        #          if prop_in_union != c1_prop or prop_in_union != c2_prop]
-
-
 
 class MazeClauseTests(unittest.TestCase):
     def test_mazeprops1(self):
