@@ -65,7 +65,7 @@ def getDirectionsToGoal(problem, initial, goal):
                                          heuristicCost)
                 frontier.put(newNode)
 
-    return "no solution"
+    return None
 
 
 def solve(problem, initial, goals):
